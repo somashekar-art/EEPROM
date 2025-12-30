@@ -238,14 +238,14 @@ module I2C_EEPROM_Controller(
                                   sda_tristate <= 1;                                    
                               end
                     
-                            if (phase_tick) begin 
-                                i2c_scl <= ~i2c_scl;
-                                
-                                if (i2c_scl == 1) begin
-                                    state <= REG_ADDR_1;
+                                if (phase_tick) begin 
+                                    i2c_scl <= ~i2c_scl;
+                                    
+                                    if (i2c_scl == 1) begin
+                                        state <= REG_ADDR_1;
+                                    end
                                 end
-                            end
-                        end   
+                            end   
                         
                 
                 REG_ADDR_1: begin  
@@ -322,43 +322,46 @@ module I2C_EEPROM_Controller(
                                 end
                             end
                         end  
-                
-                STOP: begin                   
+                               
+                    
+                 STOP: begin                       
                         if (i2c_scl == 0 && counter == START_HOLD) begin   
                             sda_tristate <= 0;  
                             sda_data     <= 0;  
                         end   
-                                                                   
+                           
+                                                                                   
                         if (phase_tick) begin 
                             i2c_scl <= ~i2c_scl;
-                            if (i2c_scl == 0) begin                               
-                                wait_counter <= 0;                                                               
-                                state        <= WAIT;
-                            end                        
-                        end       
-                    end  
-                                       
-                
-                
-                WAIT: begin
-                      if (i2c_scl == 1 && counter == START_HOLD) begin                        
-                            sda_tristate <= 1; 
-                            end                             
                             
                             if (i2c_scl == 1) begin 
-                                wait_counter <= wait_counter + 1;
-                                if (wait_counter == WAIT_5MS) begin
-                                    wait_counter <= 0; 
-                                    state        <= IDLE;                             
-                                end
+                                i2c_scl      <= 1;
+                                wait_counter <= 0;                    
+                                state <= WAIT;
                             end
-                        end 
+                        end                        
+                    end       
+               
+                
+                WAIT: begin                                    
+                      sda_tristate <= 1;                     
+                      if (i2c_scl == 1) begin                                                        
+                      wait_counter <= wait_counter + 1;
+                      if (wait_counter == WAIT_5MS) begin
+                          wait_counter <= 0; 
+                          state        <= IDLE;                             
+                      end
+                  end
+              end
+                        
+                        
                         
                         
                 
                 //############################//
                //########### READ ###########//
               //#############################//
+              
               
               
               
@@ -586,34 +589,33 @@ module I2C_EEPROM_Controller(
                                 end
                             end
                         end
-                
-                STOP_1: begin                   
+                                                                     
+                    
+               STOP_1:begin                       
                         if (i2c_scl == 0 && counter == START_HOLD) begin   
                             sda_tristate <= 0;  
                             sda_data     <= 0;  
                         end   
-                                                                   
+                                                                                                              
                         if (phase_tick) begin 
                             i2c_scl <= ~i2c_scl;
-                            if (i2c_scl == 0) begin  
-                                wait_counter <= 0;                                                                                                                          
-                                state        <= STORE_STATUS_CPTURE_ID;
-                            end                        
-                        end       
-                    end 
+                            
+                            if (i2c_scl == 1) begin 
+                                i2c_scl      <= 1;
+                                 wait_counter <= 0; 
+                                 sda_tristate <= 1;                   
+                                state <= STORE_STATUS_CPTURE_ID;
+                            end
+                        end                        
+                    end    
                 
                 
-                STORE_STATUS_CPTURE_ID: begin                                                       
-                                        if (i2c_scl == 1) begin 
-                                            wait_counter <= wait_counter + 1;
-                                            if (wait_counter == 62) begin
-                                                wait_counter <= 0; 
-                                                sda_tristate <= 1;
-                                                state        <= IDLE;                             
-                                            end
-                                        end                                                        
-                                            data_out <= shift_reg_in;                                 
-                                        end                   
+                STORE_STATUS_CPTURE_ID: begin  
+                                                                                                                                                                   
+                                        data_out <= shift_reg_in;
+                                                                         
+                                   end
+                                                      
                 default: state <= IDLE;
                 
             endcase
